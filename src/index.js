@@ -106,13 +106,37 @@ export default {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
             }
         });
-        const data = await apiResp.json();
+
+        if (!apiResp.ok) {
+            const errorText = await apiResp.text();
+            return new Response(JSON.stringify({
+                success: false,
+                error: `Upstream API Error: ${apiResp.status} ${apiResp.statusText} - ${errorText.substring(0, 100)}`
+            }), {
+                status: apiResp.status,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders },
+            });
+        }
+
+        let data;
+        try {
+            data = await apiResp.json();
+        } catch (jsonErr) {
+            const rawText = await apiResp.text();
+            return new Response(JSON.stringify({
+                success: false,
+                error: `Invalid JSON from Upstream API: ${rawText.substring(0, 100)}`
+            }), {
+                status: 502,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders },
+            });
+        }
 
         return new Response(JSON.stringify(data), {
           headers: { 'Content-Type': 'application/json', ...corsHeaders },
         });
       } catch (e) {
-         return new Response(JSON.stringify({ success: false, error: e.message }), {
+         return new Response(JSON.stringify({ success: false, error: `Worker Error: ${e.message}` }), {
             status: 500,
             headers: { 'Content-Type': 'application/json', ...corsHeaders },
           });
