@@ -404,11 +404,15 @@ export default `
                  }
             }
 
+            const currentEp = (item.chapterIndex !== undefined) ? item.chapterIndex + 1 : 1;
+            const totalEp = item.totalChapterNum || '?';
+
             const videoObj = {
                 title: item.bookName,
                 author: "Drakor Premium",
                 videoPath: videoUrl,
-                uploadDate: item.playCount ? item.playCount + ' Plays' : 'New'
+                uploadDate: item.playCount ? item.playCount + ' Plays' : 'New',
+                episode: \`Episode \${currentEp} / \${totalEp}\`
             };
 
             div.onclick = () => openPlayer(videoObj);
@@ -423,7 +427,7 @@ export default `
             \`;
 
             div.querySelector('img').src = item.bookCover;
-            div.querySelector('.episode-badge').textContent = 'EPISODE ' + (item.totalChapterNum || '?');
+            div.querySelector('.episode-badge').textContent = \`EP \${currentEp} / \${totalEp}\`;
             div.querySelector('.card-title').textContent = item.bookName;
 
             return div;
@@ -592,7 +596,8 @@ export default `
 
             // Set Info if object provided
             if (typeof video === 'object') {
-                document.getElementById('player-title').textContent = video.title || 'Unknown Title';
+                const titleText = video.episode ? \`\${video.title} (\${video.episode})\` : (video.title || 'Unknown Title');
+                document.getElementById('player-title').textContent = titleText;
                 document.getElementById('player-author').textContent = video.author || 'Unknown Channel';
                 document.getElementById('player-views').textContent = (video.views ? video.views + (String(video.views).includes('views') ? '' : ' views') : '');
                 document.getElementById('player-date').textContent = video.uploadDate || '';
