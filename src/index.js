@@ -32,20 +32,27 @@ export default {
 
         if (!key) return new Response('Missing key', { status: 400, headers: corsHeaders });
 
-        // Check R2
-        // If env.vpsai is undefined (e.g. local dev without binding), this will throw.
-        // We assume the binding exists as per plan.
-        let object = null;
-        try {
-             object = await env.vpsai.head(key);
-        } catch (err) {
-            console.error("R2 Error:", err);
-            // Fallback for testing/dev if R2 isn't actually bound in the test env
-            // but in production it must work.
-            return new Response(JSON.stringify({ success: false, error: "Server Configuration Error" }), { status: 500, headers: corsHeaders});
+        // Check if key matches the hardcoded API Key or exists in R2
+        let isValid = false;
+
+        if (key === API_KEY) {
+            isValid = true;
+        } else {
+            // Check R2
+            // If env.vpsai is undefined (e.g. local dev without binding), this will throw.
+            // We assume the binding exists as per plan.
+            try {
+                 const object = await env.vpsai.head(key);
+                 if (object) isValid = true;
+            } catch (err) {
+                console.error("R2 Error:", err);
+                // Fallback for testing/dev if R2 isn't actually bound in the test env
+                // but in production it must work.
+                return new Response(JSON.stringify({ success: false, error: "Server Configuration Error" }), { status: 500, headers: corsHeaders});
+            }
         }
 
-        if (object) {
+        if (isValid) {
           return new Response(JSON.stringify({ success: true }), {
             headers: { 'Content-Type': 'application/json', ...corsHeaders },
           });
@@ -68,15 +75,22 @@ export default {
 
       const token = authHeader.split(' ')[1];
 
-      // Validate Token (Check if key exists in R2)
-      try {
-        const object = await env.vpsai.head(token);
-        if (!object) {
-            return new Response('Invalid Token', { status: 401, headers: corsHeaders });
-        }
-      } catch (err) {
-         console.error("R2 Error in search:", err);
-         return new Response('Server Error', { status: 500, headers: corsHeaders });
+      // Validate Token
+      let isValid = false;
+      if (token === API_KEY) {
+          isValid = true;
+      } else {
+          try {
+            const object = await env.vpsai.head(token);
+            if (object) isValid = true;
+          } catch (err) {
+             console.error("R2 Error in search:", err);
+             return new Response('Server Error', { status: 500, headers: corsHeaders });
+          }
+      }
+
+      if (!isValid) {
+          return new Response('Invalid Token', { status: 401, headers: corsHeaders });
       }
 
       const query = url.searchParams.get('q');
