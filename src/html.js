@@ -13,9 +13,19 @@ export default `
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #555; }
         .glass { background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(10px); }
+
+        /* Toast Animation */
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast-enter { animation: slideIn 0.3s ease-out forwards; }
     </style>
 </head>
 <body class="bg-[#0f0f0f] text-white font-sans antialiased overflow-x-hidden">
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-20 right-4 z-[60] flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- Login Screen -->
     <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-black transition-opacity duration-500">
@@ -84,7 +94,7 @@ export default `
                 <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-red-600"></div>
             </div>
 
-            <div id="video-grid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            <div id="video-grid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 min-h-[100px]">
                 <!-- Videos injected here -->
             </div>
         </main>
@@ -164,6 +174,38 @@ export default `
         const API_BASE = window.location.origin;
         let AUTH_KEY = localStorage.getItem('agent_tube_key');
 
+        // Global Error Handler
+        window.onerror = function(msg, url, line, col, error) {
+            showToast(\`System Error: \${msg}\`);
+            return false;
+        };
+
+        // Check Upstream Key
+        if (typeof UPSTREAM_KEY === 'undefined') {
+            showToast('CRITICAL: API Configuration Missing (Key Injection Failed)', 'error');
+        }
+
+        // Toast System
+        function showToast(message, type = 'error') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const colorClass = type === 'success' ? 'bg-green-600' : 'bg-red-600';
+
+            toast.className = \`\${colorClass} text-white px-4 py-3 rounded-lg shadow-2xl flex items-center gap-3 min-w-[300px] pointer-events-auto toast-enter border border-white/10\`;
+            toast.innerHTML = \`
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="text-sm font-medium">\${message}</span>
+                <button onclick="this.parentElement.remove()" class="ml-auto hover:bg-white/20 rounded p-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            \`;
+
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
         // Check if previously logged in (optimistic)
         if (AUTH_KEY) {
            verifyKey(AUTH_KEY).then(valid => {
@@ -209,6 +251,7 @@ export default `
                 });
                 return res.ok;
             } catch (e) {
+                showToast('Auth Error: ' + e.message);
                 return false;
             }
         }
@@ -238,13 +281,15 @@ export default `
             document.getElementById('nav-home').className = 'flex flex-col items-center gap-1 text-red-500 cursor-pointer';
             document.getElementById('nav-home').querySelector('svg').setAttribute('fill', 'currentColor');
 
-            // No need to reset Profile nav icon as it is gone
-
             window.scrollTo(0,0);
         }
 
         async function fetchVideos(query) {
             try {
+                if (typeof UPSTREAM_KEY === 'undefined') {
+                    throw new Error("API Key not injected");
+                }
+
                 // Fetch directly from upstream API (Client Side) to bypass IP Block (403)
                 // Use the injected UPSTREAM_KEY (injected by src/index.js)
                 const targetUrl = 'https://api.ferdev.my.id/search/youtube?query=' + encodeURIComponent(query) + '&apikey=' + UPSTREAM_KEY;
@@ -258,6 +303,7 @@ export default `
                 return await res.json();
             } catch (e) {
                 console.error(e);
+                showToast(e.message); // Show visible error
                 return { success: false, error: e.message };
             }
         }
@@ -272,21 +318,33 @@ export default `
             grid.innerHTML = '';
             loader.classList.remove('hidden');
 
-            const data = await fetchVideos(query);
-            loader.classList.add('hidden');
+            try {
+                const data = await fetchVideos(query);
+                loader.classList.add('hidden');
 
-            if (data.success && data.result) {
-                if (data.result.length === 0) {
-                    grid.innerHTML = '<div class="col-span-full text-center text-gray-500">No videos found for your search.</div>';
+                if (data.success && data.result) {
+                    if (data.result.length === 0) {
+                        grid.innerHTML = '<div class="col-span-full text-center text-gray-500">No videos found for your search.</div>';
+                    } else {
+                        data.result.forEach(video => {
+                            try {
+                                const card = createVideoCard(video);
+                                grid.appendChild(card);
+                            } catch (renderErr) {
+                                console.error("Render Error for item", video, renderErr);
+                                showToast("Render Error: " + renderErr.message);
+                            }
+                        });
+                    }
                 } else {
-                    data.result.forEach(video => {
-                        const card = createVideoCard(video);
-                        grid.appendChild(card);
-                    });
+                    const errorMsg = data.error || 'Unknown Error';
+                    grid.innerHTML = \`<div class="col-span-full text-center text-red-500">API Error: \${errorMsg}</div>\`;
+                    showToast("API Error: " + errorMsg);
                 }
-            } else {
-                const errorMsg = data.error || 'Unknown Error';
-                grid.innerHTML = \`<div class="col-span-full text-center text-red-500">API Error: \${errorMsg}</div>\`;
+            } catch (err) {
+                loader.classList.add('hidden');
+                grid.innerHTML = \`<div class="col-span-full text-center text-red-500">System Error: \${err.message}</div>\`;
+                showToast("System Error: " + err.message);
             }
         }
 
@@ -314,11 +372,11 @@ export default `
             \`;
 
             // Set text content safely
-            div.querySelector('img').src = video.thumbnail;
-            div.querySelector('.duration').textContent = video.duration;
-            div.querySelector('.title').textContent = video.title;
-            div.querySelector('.author').textContent = video.author;
-            div.querySelector('.meta').textContent = \`\${video.views} views • \${video.uploadDate}\`;
+            if (video.thumbnail) div.querySelector('img').src = video.thumbnail;
+            if (video.duration) div.querySelector('.duration').textContent = video.duration;
+            if (video.title) div.querySelector('.title').textContent = video.title;
+            if (video.author) div.querySelector('.author').textContent = video.author;
+            div.querySelector('.meta').textContent = \`\${video.views || 0} views • \${video.uploadDate || ''}\`;
 
             return div;
         }
@@ -336,6 +394,7 @@ export default `
                 videoId = urlObj.searchParams.get('v');
             } catch (e) {
                 console.error("Invalid URL", video);
+                showToast("Invalid Video URL");
             }
 
             if (videoId) {

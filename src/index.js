@@ -21,9 +21,9 @@ export default {
 
     if (path === '/') {
       // Inject the API key into the HTML
-      // We assume `html` is a string (template literal)
+      // Use Regex to be robust against whitespace
       const injectedHtml = html.replace(
-          '/* INJECT_KEY_HERE */',
+          /\/\*\s*INJECT_KEY_HERE\s*\*\//,
           `const UPSTREAM_KEY = "${API_KEY}";`
       );
 
@@ -46,15 +46,11 @@ export default {
             isValid = true;
         } else {
             // Check R2
-            // If env.vpsai is undefined (e.g. local dev without binding), this will throw.
-            // We assume the binding exists as per plan.
             try {
                  const object = await env.vpsai.head(key);
                  if (object) isValid = true;
             } catch (err) {
                 console.error("R2 Error:", err);
-                // Fallback for testing/dev if R2 isn't actually bound in the test env
-                // but in production it must work.
                 return new Response(JSON.stringify({ success: false, error: "Server Configuration Error" }), { status: 500, headers: corsHeaders});
             }
         }
@@ -74,6 +70,7 @@ export default {
       }
     }
 
+    // Server-side proxy endpoint (Legacy/Fallback, mostly unused now as client fetches directly)
     if (path === '/api/search') {
       const authHeader = request.headers.get('Authorization');
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -82,7 +79,6 @@ export default {
 
       const token = authHeader.split(' ')[1];
 
-      // Validate Token
       let isValid = false;
       if (token === API_KEY || token === 'fdv_oO0fXjS-jBrhgaZ6WdC_5A') {
           isValid = true;
@@ -111,7 +107,6 @@ export default {
         const apiResp = await fetch(targetUrl, {
             method: 'GET',
             headers: {
-                // Mimic the exact headers that worked in CURL
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
                 'Referer': 'https://google.com',
                 'Accept': '*/*'
