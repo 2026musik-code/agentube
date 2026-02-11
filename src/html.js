@@ -40,7 +40,7 @@ export default `
     <!-- Main App (Hidden by default) -->
     <div id="app" class="hidden min-h-screen pb-20">
         <!-- Mobile-App Header -->
-        <header class="fixed top-0 left-0 right-0 h-16 glass border-b border-[#333] flex items-center justify-between px-4 z-40">
+        <header id="app-header" class="fixed top-0 left-0 right-0 h-16 glass border-b border-[#333] flex items-center justify-between px-4 z-40">
             <div class="flex items-center gap-2" onclick="resetSearch()">
                  <svg class="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 24 24"><path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z"/></svg>
                  <div class="text-xl font-bold tracking-tight">AGENT <span class="text-red-500">TUBE</span></div>
@@ -50,7 +50,7 @@ export default `
         </header>
 
         <!-- Search Bar (Sticky below header) -->
-        <div class="fixed top-16 left-0 right-0 px-4 py-3 bg-[#0f0f0f] z-30">
+        <div id="search-bar-container" class="fixed top-16 left-0 right-0 px-4 py-3 bg-[#0f0f0f] z-30">
             <div class="relative group">
                 <input type="text" id="search-input"
                     class="w-full bg-[#1a1a1a] border border-[#333] rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-red-600 transition-colors"
@@ -63,7 +63,7 @@ export default `
         </div>
 
         <!-- Category Chips -->
-        <div class="fixed top-[7.5rem] left-0 right-0 px-4 pb-2 bg-[#0f0f0f] z-30 overflow-x-auto no-scrollbar flex gap-3 text-sm">
+        <div id="category-nav" class="fixed top-[7.5rem] left-0 right-0 px-4 pb-2 bg-[#0f0f0f] z-30 overflow-x-auto no-scrollbar flex gap-3 text-sm">
             <button onclick="performSearch('Trending')" class="whitespace-nowrap px-4 py-1.5 rounded-full bg-white text-black font-medium">All</button>
             <button onclick="performSearch('Music')" class="whitespace-nowrap px-4 py-1.5 rounded-full bg-[#222] hover:bg-[#333] border border-[#333]">Music</button>
             <button onclick="performSearch('Gaming')" class="whitespace-nowrap px-4 py-1.5 rounded-full bg-[#222] hover:bg-[#333] border border-[#333]">Gaming</button>
@@ -73,7 +73,7 @@ export default `
         </div>
 
         <!-- Content -->
-        <main class="pt-[11rem] px-4">
+        <main id="main-content" class="pt-[11rem] px-4">
             <!-- Hero / Featured Banner (Static Mockup for "Mewah" feel) -->
             <div id="hero-banner" class="mb-6 relative aspect-[16/9] sm:aspect-[21/9] rounded-2xl overflow-hidden shadow-2xl border border-[#333]">
                 <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" class="w-full h-full object-cover opacity-60">
@@ -271,11 +271,17 @@ export default `
         }
 
         function showHome() {
-            // Ensure Home content is shown (remove previous Profile logic)
-            document.querySelector('#app > header').classList.remove('hidden');
-            document.querySelector('#app > div.fixed.top-16').classList.remove('hidden'); // Search bar
-            document.querySelector('#app > div.fixed.top-[7.5rem]').classList.remove('hidden'); // Categories
-            document.querySelector('#app > main').classList.remove('hidden'); // Video grid
+            // Updated showHome() using IDs to prevent SyntaxError with CSS escape chars
+            const header = document.getElementById('app-header');
+            const searchBar = document.getElementById('search-bar-container');
+            const categories = document.getElementById('category-nav');
+            const mainContent = document.getElementById('main-content');
+
+            // Ensure elements exist before modifying
+            if (header) header.classList.remove('hidden');
+            if (searchBar) searchBar.classList.remove('hidden');
+            if (categories) categories.classList.remove('hidden');
+            if (mainContent) mainContent.classList.remove('hidden');
 
             // Update Nav Icons
             document.getElementById('nav-home').className = 'flex flex-col items-center gap-1 text-red-500 cursor-pointer';
