@@ -114,7 +114,7 @@ export default `
         <main id="drakor-view" class="pt-20 px-4 pb-24 hidden">
             <div class="flex items-center gap-2 mb-6">
                 <div class="w-1 h-8 bg-red-600 rounded-full"></div>
-                <h2 class="text-2xl font-bold tracking-tight">DRAMA <span class="text-red-500">BOX</span></h2>
+                <h2 class="text-2xl font-bold tracking-tight">AGENT <span class="text-red-500">TUBE</span></h2>
             </div>
 
             <div id="drakor-loading" class="flex justify-center py-20">
@@ -602,11 +602,14 @@ export default `
 
             // Load Related Recommendations below player (reset list)
             const relatedGrid = document.getElementById('related-grid');
-            relatedGrid.innerHTML = '';
-            loadMoreRelated(true);
+            if (reset) relatedGrid.innerHTML = '';
+
+            // Pass the video type to loadMoreRelated to fetch appropriate content
+            const type = video.videoPath ? 'drakor' : 'youtube';
+            loadMoreRelated(true, type);
         }
 
-        async function loadMoreRelated(reset = false) {
+        async function loadMoreRelated(reset = false, type = 'youtube') {
             const relatedGrid = document.getElementById('related-grid');
 
             if (reset) {
@@ -620,11 +623,47 @@ export default `
                  relatedGrid.appendChild(loader);
             }
 
-            // Randomize related search
-            const relatedTopics = ['Recommended', 'Viral Shorts', 'New Music', 'Trending Now', 'Gaming', 'News', 'Movies'];
-            const topic = relatedTopics[Math.floor(Math.random() * relatedTopics.length)];
+            // Determine content source based on type
+            let data = { success: false, result: [] };
 
-            const data = await fetchVideos(topic);
+            if (type === 'drakor') {
+                // Fetch random Drakor for recommendations
+                try {
+                    const res = await fetch('https://www.magma-api.biz.id/dramabox/random');
+                    if (res.ok) {
+                        const json = await res.json();
+                        const items = json.data || json.result || [];
+                        // Convert Drakor items to standard video objects
+                        data.success = true;
+                        data.result = items.map(item => {
+                            let videoUrl = item.videoPath;
+                            if (item.cdnList && item.cdnList.length > 0) {
+                                 const cdn = item.cdnList.find(c => c.isDefault) || item.cdnList[0];
+                                 if (cdn && cdn.videoPathList && cdn.videoPathList.length > 0) {
+                                     const quality = cdn.videoPathList.find(v => v.quality === 720) || cdn.videoPathList[0];
+                                     videoUrl = quality.videoPath;
+                                 }
+                            }
+                            return {
+                                title: item.bookName,
+                                author: "Drakor Premium",
+                                videoPath: videoUrl,
+                                thumbnail: item.bookCover,
+                                duration: 'Full Episode',
+                                views: item.playCount,
+                                uploadDate: 'Ep ' + (item.totalChapterNum || '?')
+                            };
+                        });
+                    }
+                } catch (e) {
+                    console.error("Drakor related fetch failed", e);
+                }
+            } else {
+                // Youtube Search
+                const relatedTopics = ['Recommended', 'Viral Shorts', 'New Music', 'Trending Now', 'Gaming', 'News', 'Movies'];
+                const topic = relatedTopics[Math.floor(Math.random() * relatedTopics.length)];
+                data = await fetchVideos(topic);
+            }
 
             if (reset) relatedGrid.innerHTML = '';
             else {
@@ -647,6 +686,30 @@ export default `
             } else if (reset) {
                  relatedGrid.innerHTML = '<div class="col-span-full text-center text-gray-500">No related videos found.</div>';
             }
+
+            // Re-attach Load More Button for Related
+            const loadMoreContainer = document.createElement('div');
+            loadMoreContainer.className = 'col-span-full flex justify-center py-4';
+            loadMoreContainer.innerHTML = \`
+                <button id="btn-load-more-related" class="flex flex-col items-center gap-2 text-gray-400 hover:text-red-500 transition-colors animate-bounce">
+                    <span class="text-sm font-medium">Lebih Banyak</span>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                </button>
+            \`;
+            relatedGrid.appendChild(loadMoreContainer);
+
+            // Bind click to load more
+            document.getElementById('btn-load-more-related').onclick = function() {
+                this.parentElement.remove(); // Remove button before loading
+                // Add loader
+                 const loader = document.createElement('div');
+                 loader.id = 'related-loader';
+                 loader.className = 'col-span-full text-center py-4';
+                 loader.innerHTML = '<div class="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-red-600"></div>';
+                 relatedGrid.appendChild(loader);
+
+                 loadMoreRelated(false, type);
+            };
         }
 
         function closePlayer() {
