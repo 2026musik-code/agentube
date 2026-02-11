@@ -20,7 +20,14 @@ export default {
     }
 
     if (path === '/') {
-      return new Response(html, {
+      // Inject the API key into the HTML
+      // We assume `html` is a string (template literal)
+      const injectedHtml = html.replace(
+          '/* KEY_INJECTION_POINT */',
+          `const UPSTREAM_KEY = "${API_KEY}";`
+      );
+
+      return new Response(injectedHtml, {
         headers: { 'Content-Type': 'text/html' },
       });
     }
