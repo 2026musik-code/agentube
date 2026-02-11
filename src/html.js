@@ -594,16 +594,13 @@ export default `
             if (typeof video === 'object') {
                 document.getElementById('player-title').textContent = video.title || 'Unknown Title';
                 document.getElementById('player-author').textContent = video.author || 'Unknown Channel';
-                document.getElementById('player-views').textContent = (video.views ? video.views + (video.views.includes('views') ? '' : ' views') : '');
+                document.getElementById('player-views').textContent = (video.views ? video.views + (String(video.views).includes('views') ? '' : ' views') : '');
                 document.getElementById('player-date').textContent = video.uploadDate || '';
             }
 
             document.getElementById('player-modal').classList.remove('hidden');
 
             // Load Related Recommendations below player (reset list)
-            const relatedGrid = document.getElementById('related-grid');
-            if (reset) relatedGrid.innerHTML = '';
-
             // Pass the video type to loadMoreRelated to fetch appropriate content
             const type = video.videoPath ? 'drakor' : 'youtube';
             loadMoreRelated(true, type);
