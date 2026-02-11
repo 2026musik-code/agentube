@@ -359,7 +359,8 @@ export default `
             loader.classList.remove('hidden');
 
             try {
-                const res = await fetch('https://magma-api.biz.id/dramabox/random');
+                // Use www subdomain to ensure CORS headers are present (prevents Redirect 307 which causes CORS issues)
+                const res = await fetch('https://www.magma-api.biz.id/dramabox/random');
                 if (!res.ok) throw new Error('Failed to load Drakor data');
 
                 const data = await res.json();
