@@ -89,100 +89,6 @@ export default `
             </div>
         </main>
 
-        <!-- Profile View (Hidden by default) -->
-        <main id="profile-view" class="pt-20 px-4 pb-8 hidden">
-            <div class="max-w-2xl mx-auto space-y-6">
-                <!-- Profile Header -->
-                <div class="flex flex-col items-center justify-center py-8">
-                    <div class="w-24 h-24 rounded-full bg-gradient-to-br from-red-600 to-purple-600 flex items-center justify-center mb-4 shadow-lg border-2 border-white/20">
-                        <span class="text-3xl font-bold">AT</span>
-                    </div>
-                    <h2 class="text-2xl font-bold tracking-tight">AGENT <span class="text-red-500">TUBE</span></h2>
-                    <p class="text-gray-400 text-sm">Developer Profile</p>
-                </div>
-
-                <!-- Personal Data Card -->
-                <div class="bg-[#1a1a1a] rounded-2xl p-6 border border-[#333] shadow-lg">
-                    <h3 class="text-lg font-bold text-white mb-6 border-b border-[#333] pb-2">Informasi Developer</h3>
-
-                    <div class="space-y-4">
-                        <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 rounded-full bg-[#222] flex items-center justify-center text-gray-400">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-500 uppercase tracking-wider">Nama</p>
-                                <p class="text-white font-medium">NINA KURNIASIH</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 rounded-full bg-[#222] flex items-center justify-center text-gray-400">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-500 uppercase tracking-wider">Developer</p>
-                                <p class="text-white font-medium">AGENT TUBE</p>
-                            </div>
-                        </div>
-
-                        <a href="mailto:CEODEDI@GMAIL.COM" class="flex items-center gap-4 group cursor-pointer">
-                            <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center text-red-500 group-hover:bg-red-600 group-hover:text-white transition-colors">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-500 uppercase tracking-wider">Email</p>
-                                <p class="text-white font-medium group-hover:text-red-500 transition-colors">CEODEDI@GMAIL.COM</p>
-                            </div>
-                        </a>
-
-                        <a href="https://wa.me/6287733745059" target="_blank" class="flex items-center gap-4 group cursor-pointer">
-                            <div class="w-10 h-10 rounded-full bg-green-900/30 flex items-center justify-center text-green-500 group-hover:bg-green-600 group-hover:text-white transition-colors">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-500 uppercase tracking-wider">WhatsApp</p>
-                                <p class="text-white font-medium group-hover:text-green-500 transition-colors">0877-3374-5059</p>
-                            </div>
-                        </a>
-
-                        <a href="https://t.me/otomotif_digital" target="_blank" class="flex items-center gap-4 group cursor-pointer">
-                            <div class="w-10 h-10 rounded-full bg-blue-900/30 flex items-center justify-center text-blue-500 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 11.944 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-500 uppercase tracking-wider">Telegram</p>
-                                <p class="text-white font-medium group-hover:text-blue-500 transition-colors">@otomotif_digital</p>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- About & Legal -->
-                <div class="bg-[#1a1a1a] rounded-2xl p-6 border border-[#333] shadow-lg">
-                    <h3 class="text-lg font-bold text-white mb-4">Tentang Agent Tube</h3>
-                    <p class="text-gray-400 text-sm mb-6 leading-relaxed">
-                        Agent Tube adalah platform streaming video premium yang dikembangkan untuk memberikan pengalaman menonton terbaik. Nikmati ribuan konten hiburan tanpa batas.
-                    </p>
-
-                    <div class="bg-red-900/20 border border-red-900/50 rounded-xl p-4">
-                        <div class="flex items-start gap-3">
-                            <svg class="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                            <div>
-                                <h4 class="text-white font-bold text-sm mb-1">PERINGATAN HAK CIPTA</h4>
-                                <p class="text-gray-400 text-xs leading-relaxed">
-                                    Dilarang keras menyalin, menduplikasi, atau mendistribusikan ulang sebagian atau seluruh konten dan desain web ini tanpa izin tertulis dari pengembang.
-                                </p>
-                                <p class="text-gray-500 text-[10px] mt-2 italic">
-                                    Dilindungi oleh Undang-Undang Republik Indonesia Nomor 28 Tahun 2014 tentang Hak Cipta dan Undang-Undang Informasi dan Transaksi Elektronik (UU ITE).
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-
         <!-- Bottom Navigation (Mobile App Style) -->
         <nav class="fixed bottom-0 left-0 right-0 h-16 bg-[#0f0f0f] border-t border-[#333] flex items-center justify-around z-40 pb-safe">
             <div id="nav-home" class="flex flex-col items-center gap-1 text-red-500 cursor-pointer" onclick="showHome()">
@@ -196,10 +102,6 @@ export default `
             <div class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-colors cursor-pointer">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                 <span class="text-[10px] font-medium">Library</span>
-            </div>
-            <div id="nav-profile" class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-colors cursor-pointer" onclick="showProfile()">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                <span class="text-[10px] font-medium">Profile</span>
             </div>
         </nav>
     </div>
@@ -326,9 +228,7 @@ export default `
         }
 
         function showHome() {
-            // Hide Profile
-            document.getElementById('profile-view').classList.add('hidden');
-            // Show Home content
+            // Ensure Home content is shown (remove previous Profile logic)
             document.querySelector('#app > header').classList.remove('hidden');
             document.querySelector('#app > div.fixed.top-16').classList.remove('hidden'); // Search bar
             document.querySelector('#app > div.fixed.top-[7.5rem]').classList.remove('hidden'); // Categories
@@ -338,28 +238,7 @@ export default `
             document.getElementById('nav-home').className = 'flex flex-col items-center gap-1 text-red-500 cursor-pointer';
             document.getElementById('nav-home').querySelector('svg').setAttribute('fill', 'currentColor');
 
-            document.getElementById('nav-profile').className = 'flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-colors cursor-pointer';
-            document.getElementById('nav-profile').querySelector('svg').setAttribute('fill', 'none');
-
-            window.scrollTo(0,0);
-        }
-
-        function showProfile() {
-            // Hide Home content
-            document.querySelector('#app > header').classList.add('hidden');
-            document.querySelector('#app > div.fixed.top-16').classList.add('hidden'); // Search bar
-            document.querySelector('#app > div.fixed.top-[7.5rem]').classList.add('hidden'); // Categories
-            document.querySelector('#app > main').classList.add('hidden'); // Video grid
-
-            // Show Profile
-            document.getElementById('profile-view').classList.remove('hidden');
-
-            // Update Nav Icons
-            document.getElementById('nav-home').className = 'flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-colors cursor-pointer';
-            document.getElementById('nav-home').querySelector('svg').setAttribute('fill', 'none');
-
-            document.getElementById('nav-profile').className = 'flex flex-col items-center gap-1 text-red-500 cursor-pointer';
-            document.getElementById('nav-profile').querySelector('svg').setAttribute('fill', 'currentColor');
+            // No need to reset Profile nav icon as it is gone
 
             window.scrollTo(0,0);
         }
