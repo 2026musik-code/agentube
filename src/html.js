@@ -97,6 +97,16 @@ export default `
             <div id="video-grid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 min-h-[100px]">
                 <!-- Videos injected here -->
             </div>
+
+            <!-- Load More Button Container -->
+            <div id="load-more-container" class="flex justify-center py-8 pb-20 hidden">
+                 <button onclick="loadMoreMain()" class="group flex items-center gap-2 bg-[#222] hover:bg-[#333] border border-[#333] px-6 py-3 rounded-full transition-all active:scale-95">
+                     <span class="text-sm font-medium group-hover:text-white text-gray-300">Muat Lebih Banyak</span>
+                     <div class="w-6 h-6 rounded-full bg-red-600 flex items-center justify-center group-hover:bg-red-500 transition-colors">
+                         <svg class="w-4 h-4 text-white animate-bounce-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                     </div>
+                 </button>
+            </div>
         </main>
 
         <!-- Bottom Navigation (Mobile App Style) -->
@@ -173,6 +183,8 @@ export default `
         /* INJECT_KEY_HERE */
         const API_BASE = window.location.origin;
         let AUTH_KEY = localStorage.getItem('agent_tube_key');
+
+        const extraTopics = ['Musik Populer Indonesia', 'Film Aksi Terbaik', 'Game Mobile Legends', 'Vlog Artis Indonesia', 'Komedi Lucu', 'Berita Viral Hari Ini', 'Kuliner Enak Jakarta', 'Teknologi Terbaru', 'Anime Hits', 'Cover Lagu Terbaik'];
 
         // Global Error Handler
         window.onerror = function(msg, url, line, col, error) {
@@ -314,23 +326,29 @@ export default `
             }
         }
 
-        async function performSearch(queryOverride) {
+        async function performSearch(queryOverride, isLoadMore = false) {
             const query = queryOverride || document.getElementById('search-input').value;
             if (!query) return;
 
             const grid = document.getElementById('video-grid');
             const loader = document.getElementById('loading');
+            const loadMoreBtn = document.getElementById('load-more-container');
 
-            grid.innerHTML = '';
-            loader.classList.remove('hidden');
+            if (!isLoadMore) {
+                grid.innerHTML = '';
+                loadMoreBtn.classList.add('hidden'); // Hide until loaded
+            }
+
+            // If it's a new search, show full screen loader, else maybe small spinner (but simple here)
+            if (!isLoadMore) loader.classList.remove('hidden');
 
             try {
                 const data = await fetchVideos(query);
-                loader.classList.add('hidden');
+                if (!isLoadMore) loader.classList.add('hidden');
 
                 if (data.success && data.result) {
                     if (data.result.length === 0) {
-                        grid.innerHTML = '<div class="col-span-full text-center text-gray-500">No videos found for your search.</div>';
+                        if (!isLoadMore) grid.innerHTML = '<div class="col-span-full text-center text-gray-500">No videos found for your search.</div>';
                     } else {
                         data.result.forEach(video => {
                             try {
@@ -341,17 +359,38 @@ export default `
                                 showToast("Render Error: " + renderErr.message);
                             }
                         });
+                        // Show load more button if we have results
+                        loadMoreBtn.classList.remove('hidden');
                     }
                 } else {
                     const errorMsg = data.error || 'Unknown Error';
-                    grid.innerHTML = \`<div class="col-span-full text-center text-red-500">API Error: \${errorMsg}</div>\`;
+                    if (!isLoadMore) grid.innerHTML = \`<div class="col-span-full text-center text-red-500">API Error: \${errorMsg}</div>\`;
                     showToast("API Error: " + errorMsg);
                 }
             } catch (err) {
-                loader.classList.add('hidden');
-                grid.innerHTML = \`<div class="col-span-full text-center text-red-500">System Error: \${err.message}</div>\`;
+                if (!isLoadMore) {
+                    loader.classList.add('hidden');
+                    grid.innerHTML = \`<div class="col-span-full text-center text-red-500">System Error: \${err.message}</div>\`;
+                }
                 showToast("System Error: " + err.message);
             }
+        }
+
+        async function loadMoreMain() {
+            // Pick a random topic to simulate infinite feed
+            const topic = extraTopics[Math.floor(Math.random() * extraTopics.length)];
+            const btn = document.querySelector('#load-more-container button');
+
+            // Add spinning state to button
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>';
+            btn.disabled = true;
+
+            await performSearch(topic, true);
+
+            // Reset button
+            btn.innerHTML = originalText;
+            btn.disabled = false;
         }
 
         function createVideoCard(video) {
