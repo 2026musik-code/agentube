@@ -160,12 +160,17 @@ export default `
                 loader.classList.add('hidden');
 
                 if (data.success && data.result) {
-                    data.result.forEach(video => {
-                        const card = createVideoCard(video);
-                        grid.appendChild(card);
-                    });
+                    if (data.result.length === 0) {
+                        grid.innerHTML = '<div class="col-span-full text-center text-gray-500">No videos found for your search.</div>';
+                    } else {
+                        data.result.forEach(video => {
+                            const card = createVideoCard(video);
+                            grid.appendChild(card);
+                        });
+                    }
                 } else {
-                    grid.innerHTML = '<div class="col-span-full text-center text-gray-500">No results found</div>';
+                    const errorMsg = data.error || 'Unknown Error';
+                    grid.innerHTML = \`<div class="col-span-full text-center text-red-500">API Error: \${errorMsg}</div>\`;
                 }
 
             } catch (e) {

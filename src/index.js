@@ -101,8 +101,9 @@ export default {
       try {
         const targetUrl = `${API_URL}?query=${encodeURIComponent(query)}&apikey=${API_KEY}`;
         const apiResp = await fetch(targetUrl, {
+            method: 'GET',
             headers: {
-                'User-Agent': 'AgentTube/1.0'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
             }
         });
         const data = await apiResp.json();
