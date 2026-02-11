@@ -110,6 +110,22 @@ export default `
             </div>
         </main>
 
+        <!-- Drakor View (Hidden by default) -->
+        <main id="drakor-view" class="pt-20 px-4 pb-24 hidden">
+            <div class="flex items-center gap-2 mb-6">
+                <div class="w-1 h-8 bg-red-600 rounded-full"></div>
+                <h2 class="text-2xl font-bold tracking-tight">DRAMA <span class="text-red-500">BOX</span></h2>
+            </div>
+
+            <div id="drakor-loading" class="flex justify-center py-20">
+                <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-red-600"></div>
+            </div>
+
+            <div id="drakor-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <!-- Drakor items injected here -->
+            </div>
+        </main>
+
         <!-- Bottom Navigation (Mobile App Style) -->
         <nav class="fixed bottom-0 left-0 right-0 h-16 bg-[#0f0f0f] border-t border-[#333] flex items-center justify-around z-40 pb-safe">
             <div id="nav-home" class="flex flex-col items-center gap-1 text-red-500 cursor-pointer" onclick="showHome()">
@@ -120,9 +136,10 @@ export default `
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                 <span class="text-[10px] font-medium">Trending</span>
             </div>
-            <div class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-colors cursor-pointer">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                <span class="text-[10px] font-medium">Library</span>
+            <!-- Modified Library to Drakor -->
+            <div id="nav-drakor" class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-colors cursor-pointer" onclick="showDrakor()">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="text-[10px] font-medium">Drakor</span>
             </div>
         </nav>
     </div>
@@ -143,6 +160,7 @@ export default `
         <!-- Sticky Player Container (Full Width) -->
         <div class="relative w-full aspect-video bg-black shadow-2xl flex-shrink-0 z-20">
             <iframe id="player-frame" class="w-full h-full" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            <video id="native-player" class="w-full h-full hidden" controls autoplay playsinline></video>
         </div>
 
         <!-- Scrollable Content Section -->
@@ -284,7 +302,9 @@ export default `
         }
 
         function showHome() {
-            // Updated showHome() using IDs to prevent SyntaxError with CSS escape chars
+            // Hide Drakor View
+            document.getElementById('drakor-view').classList.add('hidden');
+
             const header = document.getElementById('app-header');
             const searchBar = document.getElementById('search-bar-container');
             const categories = document.getElementById('category-nav');
@@ -300,7 +320,109 @@ export default `
             document.getElementById('nav-home').className = 'flex flex-col items-center gap-1 text-red-500 cursor-pointer';
             document.getElementById('nav-home').querySelector('svg').setAttribute('fill', 'currentColor');
 
+            document.getElementById('nav-drakor').className = 'flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-colors cursor-pointer';
+            document.getElementById('nav-drakor').querySelector('svg').setAttribute('fill', 'none');
+
             window.scrollTo(0,0);
+        }
+
+        async function showDrakor() {
+            // Hide Home Elements
+            document.getElementById('app-header').classList.add('hidden');
+            document.getElementById('search-bar-container').classList.add('hidden');
+            document.getElementById('category-nav').classList.add('hidden');
+            document.getElementById('main-content').classList.add('hidden');
+
+            // Show Drakor View
+            document.getElementById('drakor-view').classList.remove('hidden');
+
+            // Update Nav Icons
+            document.getElementById('nav-home').className = 'flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-colors cursor-pointer';
+            document.getElementById('nav-home').querySelector('svg').setAttribute('fill', 'none');
+
+            document.getElementById('nav-drakor').className = 'flex flex-col items-center gap-1 text-red-500 cursor-pointer';
+            document.getElementById('nav-drakor').querySelector('svg').setAttribute('fill', 'currentColor');
+
+            // Fetch content if empty
+            const drakorGrid = document.getElementById('drakor-grid');
+            if (drakorGrid.children.length === 0) {
+                await fetchDrakor();
+            }
+
+            window.scrollTo(0,0);
+        }
+
+        async function fetchDrakor() {
+            const grid = document.getElementById('drakor-grid');
+            const loader = document.getElementById('drakor-loading');
+
+            loader.classList.remove('hidden');
+
+            try {
+                const res = await fetch('https://magma-api.biz.id/dramabox/random');
+                if (!res.ok) throw new Error('Failed to load Drakor data');
+
+                const data = await res.json();
+                loader.classList.add('hidden');
+
+                if (data && data.result) {
+                    data.result.forEach(item => {
+                        try {
+                            const card = createDrakorCard(item);
+                            grid.appendChild(card);
+                        } catch (e) {
+                            console.error(e);
+                        }
+                    });
+                } else {
+                    showToast('No Drakor data found');
+                }
+            } catch (e) {
+                loader.classList.add('hidden');
+                showToast('Drakor API Error: ' + e.message);
+            }
+        }
+
+        function createDrakorCard(item) {
+            const div = document.createElement('div');
+            div.className = 'group cursor-pointer relative aspect-[2/3] rounded-xl overflow-hidden shadow-lg border border-transparent hover:border-red-600 transition-all';
+
+            // Prepare video object for player
+            // Use the first video in cdnList or direct videoPath if available
+            // Prioritize higher quality or default
+            let videoUrl = item.videoPath;
+            if (item.cdnList && item.cdnList.length > 0) {
+                 const cdn = item.cdnList.find(c => c.isDefault) || item.cdnList[0];
+                 if (cdn && cdn.videoPathList && cdn.videoPathList.length > 0) {
+                     // Try to find 720p or just take first
+                     const quality = cdn.videoPathList.find(v => v.quality === 720) || cdn.videoPathList[0];
+                     videoUrl = quality.videoPath;
+                 }
+            }
+
+            const videoObj = {
+                title: item.bookName,
+                author: "Drakor Premium",
+                videoPath: videoUrl,
+                uploadDate: item.playCount ? item.playCount + ' Plays' : 'New'
+            };
+
+            div.onclick = () => openPlayer(videoObj);
+
+            div.innerHTML = \`
+                <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
+                <div class="absolute bottom-3 left-3 right-3">
+                    <span class="episode-badge bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded mb-2 inline-block"></span>
+                    <h3 class="card-title text-white font-bold text-sm line-clamp-2 leading-tight drop-shadow-md"></h3>
+                </div>
+            \`;
+
+            div.querySelector('img').src = item.bookCover;
+            div.querySelector('.episode-badge').textContent = 'EPISODE ' + (item.totalChapterNum || '?');
+            div.querySelector('.card-title').textContent = item.bookName;
+
+            return div;
         }
 
         async function fetchVideos(query) {
@@ -428,40 +550,56 @@ export default `
         }
 
         function openPlayer(video) {
-            // Extract Video ID
-            // Format: https://youtube.com/watch?v=xf6BYQBForI
-            let videoId = '';
-            try {
-                // video might be an object (from grid) or URL (if called directly, though we updated usage)
-                // Let's assume object usage updated everywhere.
-                // If it's a string (legacy/url), treat as before.
-                const url = (typeof video === 'string') ? video : video.url;
-                const urlObj = new URL(url);
-                videoId = urlObj.searchParams.get('v');
-            } catch (e) {
-                console.error("Invalid URL", video);
-                showToast("Invalid Video URL");
-            }
+            // Check if native video (Drakor) or YouTube (Standard)
+            const iframe = document.getElementById('player-frame');
+            const nativeVideo = document.getElementById('native-player');
 
-            if (videoId) {
-                const embedUrl = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1';
-                document.getElementById('player-frame').src = embedUrl;
+            // Reset state
+            iframe.src = '';
+            nativeVideo.src = '';
+            nativeVideo.classList.add('hidden');
+            iframe.classList.add('hidden');
 
-                // Set Info if object provided
-                if (typeof video === 'object') {
-                    document.getElementById('player-title').textContent = video.title || 'Unknown Title';
-                    document.getElementById('player-author').textContent = video.author || 'Unknown Channel';
-                    document.getElementById('player-views').textContent = (video.views ? video.views + ' views' : '');
-                    document.getElementById('player-date').textContent = video.uploadDate || '';
+            if (video.videoPath) {
+                // Native Player Mode (Drakor)
+                nativeVideo.src = video.videoPath;
+                nativeVideo.classList.remove('hidden');
+                nativeVideo.play().catch(e => console.error("Autoplay failed", e));
+            } else {
+                // YouTube Mode
+                let videoId = '';
+                try {
+                    const url = (typeof video === 'string') ? video : video.url;
+                    const urlObj = new URL(url);
+                    videoId = urlObj.searchParams.get('v');
+                } catch (e) {
+                    console.error("Invalid URL", video);
                 }
 
-                document.getElementById('player-modal').classList.remove('hidden');
-
-                // Load Related Recommendations below player (reset list)
-                const relatedGrid = document.getElementById('related-grid');
-                relatedGrid.innerHTML = '';
-                loadMoreRelated(true);
+                if (videoId) {
+                    const embedUrl = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1';
+                    iframe.src = embedUrl;
+                    iframe.classList.remove('hidden');
+                } else {
+                    showToast("Video ID not found");
+                    return;
+                }
             }
+
+            // Set Info if object provided
+            if (typeof video === 'object') {
+                document.getElementById('player-title').textContent = video.title || 'Unknown Title';
+                document.getElementById('player-author').textContent = video.author || 'Unknown Channel';
+                document.getElementById('player-views').textContent = (video.views ? video.views + (video.views.includes('views') ? '' : ' views') : '');
+                document.getElementById('player-date').textContent = video.uploadDate || '';
+            }
+
+            document.getElementById('player-modal').classList.remove('hidden');
+
+            // Load Related Recommendations below player (reset list)
+            const relatedGrid = document.getElementById('related-grid');
+            relatedGrid.innerHTML = '';
+            loadMoreRelated(true);
         }
 
         async function loadMoreRelated(reset = false) {
@@ -508,7 +646,9 @@ export default `
         }
 
         function closePlayer() {
-            document.getElementById('player-frame').src = ''; // Stop video
+            document.getElementById('player-frame').src = ''; // Stop YouTube
+            document.getElementById('native-player').pause(); // Stop Native
+            document.getElementById('native-player').src = '';
             document.getElementById('player-modal').classList.add('hidden');
         }
 
