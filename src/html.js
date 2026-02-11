@@ -112,23 +112,52 @@ export default `
 
     <!-- Video Player Modal -->
     <div id="player-modal" class="fixed inset-0 z-50 bg-black hidden flex flex-col">
+        <!-- Sticky Header in Modal -->
+        <div class="bg-black/90 backdrop-blur border-b border-[#333] px-4 py-3 flex items-center justify-between z-30 sticky top-0">
+            <div class="flex items-center gap-2">
+                 <svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 24 24"><path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z"/></svg>
+                 <div class="text-lg font-bold tracking-tight text-white">AGENT <span class="text-red-500">TUBE</span></div>
+            </div>
+            <button onclick="closePlayer()" class="text-gray-400 hover:text-white transition-colors">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
         <!-- Sticky Player Container (Full Width) -->
         <div class="relative w-full aspect-video bg-black shadow-2xl flex-shrink-0 z-20">
-            <button onclick="closePlayer()" class="absolute top-4 right-4 z-10 text-white bg-black/50 hover:bg-red-600 rounded-full p-2 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
             <iframe id="player-frame" class="w-full h-full" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
 
-        <!-- Scrollable Recommendations Section -->
+        <!-- Scrollable Content Section -->
         <div class="flex-1 overflow-y-auto w-full bg-[#0f0f0f] relative z-10">
-             <div class="max-w-6xl mx-auto px-4 py-6">
+             <div class="max-w-6xl mx-auto px-4 py-4">
+
+                <!-- Video Info -->
+                <div class="mb-6 border-b border-[#333] pb-4">
+                    <h2 id="player-title" class="text-xl font-bold text-white mb-2 line-clamp-2 leading-tight"></h2>
+                    <div class="flex items-center gap-2 text-sm text-gray-400">
+                        <span id="player-author" class="hover:text-white cursor-pointer font-medium"></span>
+                        <span>•</span>
+                        <span id="player-views"></span>
+                        <span>•</span>
+                        <span id="player-date"></span>
+                    </div>
+                </div>
+
                 <h3 class="text-lg font-bold text-white mb-4">Video Terkait & Trending</h3>
-                <div id="related-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-20">
+                <div id="related-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-8">
                     <!-- Related videos injected here -->
                     <div class="col-span-full text-center py-8">
                         <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-600"></div>
                     </div>
+                </div>
+
+                <!-- Load More Button -->
+                <div class="flex justify-center pb-20 pt-4">
+                    <button onclick="loadMoreRelated()" class="flex flex-col items-center gap-2 text-gray-400 hover:text-red-500 transition-colors animate-bounce">
+                        <span class="text-sm font-medium">Lebih Banyak</span>
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                    </button>
                 </div>
             </div>
         </div>
@@ -250,7 +279,8 @@ export default `
         function createVideoCard(video) {
             const div = document.createElement('div');
             div.className = 'group cursor-pointer';
-            div.onclick = () => openPlayer(video.url);
+            // Pass the entire video object to openPlayer
+            div.onclick = () => openPlayer(video);
 
             // Safe rendering to prevent XSS
             div.innerHTML = \`
@@ -279,54 +309,81 @@ export default `
             return div;
         }
 
-        function openPlayer(url) {
+        function openPlayer(video) {
             // Extract Video ID
             // Format: https://youtube.com/watch?v=xf6BYQBForI
             let videoId = '';
             try {
+                // video might be an object (from grid) or URL (if called directly, though we updated usage)
+                // Let's assume object usage updated everywhere.
+                // If it's a string (legacy/url), treat as before.
+                const url = (typeof video === 'string') ? video : video.url;
                 const urlObj = new URL(url);
                 videoId = urlObj.searchParams.get('v');
             } catch (e) {
-                console.error("Invalid URL", url);
+                console.error("Invalid URL", video);
             }
 
             if (videoId) {
                 const embedUrl = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1';
                 document.getElementById('player-frame').src = embedUrl;
+
+                // Set Info if object provided
+                if (typeof video === 'object') {
+                    document.getElementById('player-title').textContent = video.title || 'Unknown Title';
+                    document.getElementById('player-author').textContent = video.author || 'Unknown Channel';
+                    document.getElementById('player-views').textContent = (video.views ? video.views + ' views' : '');
+                    document.getElementById('player-date').textContent = video.uploadDate || '';
+                }
+
                 document.getElementById('player-modal').classList.remove('hidden');
 
-                // Load Related Recommendations below player
-                loadRelatedVideos();
+                // Load Related Recommendations below player (reset list)
+                const relatedGrid = document.getElementById('related-grid');
+                relatedGrid.innerHTML = '';
+                loadMoreRelated(true);
             }
         }
 
-        async function loadRelatedVideos() {
+        async function loadMoreRelated(reset = false) {
             const relatedGrid = document.getElementById('related-grid');
-            relatedGrid.innerHTML = '<div class="col-span-full text-center py-8"><div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-600"></div></div>';
+
+            if (reset) {
+                 relatedGrid.innerHTML = '<div class="col-span-full text-center py-8"><div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-600"></div></div>';
+            } else {
+                 // Append loader at bottom if loading more
+                 const loader = document.createElement('div');
+                 loader.id = 'related-loader';
+                 loader.className = 'col-span-full text-center py-4';
+                 loader.innerHTML = '<div class="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-red-600"></div>';
+                 relatedGrid.appendChild(loader);
+            }
 
             // Randomize related search
-            const relatedTopics = ['Recommended', 'Viral Shorts', 'New Music', 'Trending Now'];
+            const relatedTopics = ['Recommended', 'Viral Shorts', 'New Music', 'Trending Now', 'Gaming', 'News', 'Movies'];
             const topic = relatedTopics[Math.floor(Math.random() * relatedTopics.length)];
 
             const data = await fetchVideos(topic);
-            relatedGrid.innerHTML = ''; // Clear loader
+
+            if (reset) relatedGrid.innerHTML = '';
+            else {
+                const loader = document.getElementById('related-loader');
+                if (loader) loader.remove();
+            }
 
             if (data.success && data.result) {
-                 data.result.slice(0, 8).forEach(video => {
-                    // Create card but override click behavior to just update player
+                 data.result.forEach(video => {
                     const card = createVideoCard(video);
                     // Override click to stay in modal
-                    const originalClick = card.onclick;
                     card.onclick = () => {
-                         // Update player src
-                         const vidId = new URL(video.url).searchParams.get('v');
-                         document.getElementById('player-frame').src = 'https://www.youtube.com/embed/' + vidId + '?autoplay=1';
-                         // Reload related again? Maybe not for now to avoid flicker
-                         window.scrollTo(0,0);
+                         // Pass full video object to update UI correctly
+                         openPlayer(video);
+                         // Scroll to top of modal content
+                         document.querySelector('#player-modal .overflow-y-auto').scrollTop = 0;
                     };
                     relatedGrid.appendChild(card);
                 });
-            } else {
+            } else if (reset) {
                  relatedGrid.innerHTML = '<div class="col-span-full text-center text-gray-500">No related videos found.</div>';
             }
         }
