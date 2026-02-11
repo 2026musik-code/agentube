@@ -150,21 +150,15 @@ export default `
             loader.classList.remove('hidden');
 
             try {
-                const res = await fetch(API_BASE + '/api/search?q=' + encodeURIComponent(query), {
-                    headers: {
-                        'Authorization': 'Bearer ' + AUTH_KEY
-                    }
-                });
+                // Fetch directly from upstream API (Client Side) to bypass IP Block (403)
+                // Use the injected UPSTREAM_KEY (injected by src/index.js)
+                const targetUrl = 'https://api.ferdev.my.id/search/youtube?query=' + encodeURIComponent(query) + '&apikey=' + UPSTREAM_KEY;
+
+                const res = await fetch(targetUrl);
 
                 if (!res.ok) {
-                     const errorText = await res.text();
-                     // Parse JSON error from Worker if possible
-                     try {
-                         const jsonErr = JSON.parse(errorText);
-                         if (jsonErr.error) throw new Error(jsonErr.error);
-                     } catch(e) {}
-
-                     throw new Error(`\${res.status} \${res.statusText} - \${errorText.substring(0, 100)}`);
+                    const errorText = await res.text();
+                    throw new Error('Upstream API Error: ' + res.status + ' ' + res.statusText + ' - ' + errorText.substring(0, 100));
                 }
 
                 const data = await res.json();
@@ -197,23 +191,30 @@ export default `
             div.className = 'group cursor-pointer';
             div.onclick = () => openPlayer(video.url);
 
+            // Safe rendering to prevent XSS
             div.innerHTML = \`
                 <div class="relative aspect-video rounded-xl overflow-hidden mb-3 border border-transparent group-hover:border-white/20 transition-all">
-                    <img src="\${video.thumbnail}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
-                    <div class="absolute bottom-2 right-2 bg-black/80 px-2 py-0.5 rounded text-xs font-medium">
-                        \${video.duration}
-                    </div>
+                    <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
+                    <div class="absolute bottom-2 right-2 bg-black/80 px-2 py-0.5 rounded text-xs font-medium duration"></div>
                 </div>
                 <div class="flex gap-3">
                     <div class="flex-1">
-                        <h3 class="font-semibold text-sm line-clamp-2 leading-tight mb-1 group-hover:text-white text-gray-100">\${video.title}</h3>
+                        <h3 class="font-semibold text-sm line-clamp-2 leading-tight mb-1 group-hover:text-white text-gray-100 title"></h3>
                         <div class="text-xs text-gray-400">
-                            <p class="hover:text-gray-300">\${video.author}</p>
-                            <p>\${video.views} views • \${video.uploadDate}</p>
+                            <p class="hover:text-gray-300 author"></p>
+                            <p class="meta"></p>
                         </div>
                     </div>
                 </div>
             \`;
+
+            // Set text content safely
+            div.querySelector('img').src = video.thumbnail;
+            div.querySelector('.duration').textContent = video.duration;
+            div.querySelector('.title').textContent = video.title;
+            div.querySelector('.author').textContent = video.author;
+            div.querySelector('.meta').textContent = \`\${video.views} views • \${video.uploadDate}\`;
+
             return div;
         }
 
