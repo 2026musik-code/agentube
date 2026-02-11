@@ -111,12 +111,26 @@ export default `
     </div>
 
     <!-- Video Player Modal -->
-    <div id="player-modal" class="fixed inset-0 z-50 bg-black/90 hidden flex items-center justify-center backdrop-blur-sm">
-        <div class="relative w-full max-w-6xl aspect-video bg-black shadow-2xl rounded-lg overflow-hidden border border-[#333]">
-            <button onclick="closePlayer()" class="absolute top-4 right-4 z-10 text-white bg-black/50 hover:bg-red-600 rounded-full p-2 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-            <iframe id="player-frame" class="w-full h-full" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    <div id="player-modal" class="fixed inset-0 z-50 bg-black/90 hidden backdrop-blur-sm overflow-y-auto">
+        <div class="min-h-screen px-4 py-8 flex flex-col items-center">
+            <!-- Player Container -->
+            <div class="relative w-full max-w-6xl aspect-video bg-black shadow-2xl rounded-lg overflow-hidden border border-[#333] mb-6 flex-shrink-0">
+                <button onclick="closePlayer()" class="absolute top-4 right-4 z-10 text-white bg-black/50 hover:bg-red-600 rounded-full p-2 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                <iframe id="player-frame" class="w-full h-full" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+
+            <!-- Recommendations Section -->
+            <div class="w-full max-w-6xl">
+                <h3 class="text-xl font-bold text-white mb-4">Video Terkait & Trending</h3>
+                <div id="related-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <!-- Related videos injected here -->
+                    <div class="col-span-full text-center py-8">
+                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-600"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -179,9 +193,30 @@ export default `
             setTimeout(() => {
                 login.classList.add('hidden');
                 document.getElementById('app').classList.remove('hidden');
-                // Load default recommendations
-                performSearch('Judika'); // Default query from prompt logic
+                // Load random recommendations
+                const randomTopics = ['Trending Indonesia', 'Viral Video', 'Music Hits', 'Lucu', 'Berita Terkini'];
+                const randomTopic = randomTopics[Math.floor(Math.random() * randomTopics.length)];
+                performSearch(randomTopic);
             }, 500);
+        }
+
+        async function fetchVideos(query) {
+            try {
+                // Fetch directly from upstream API (Client Side) to bypass IP Block (403)
+                // Use the injected UPSTREAM_KEY (injected by src/index.js)
+                const targetUrl = 'https://api.ferdev.my.id/search/youtube?query=' + encodeURIComponent(query) + '&apikey=' + UPSTREAM_KEY;
+
+                const res = await fetch(targetUrl);
+
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    throw new Error('Upstream API Error: ' + res.status + ' ' + res.statusText + ' - ' + errorText.substring(0, 100));
+                }
+                return await res.json();
+            } catch (e) {
+                console.error(e);
+                return { success: false, error: e.message };
+            }
         }
 
         async function performSearch(queryOverride) {
@@ -194,40 +229,21 @@ export default `
             grid.innerHTML = '';
             loader.classList.remove('hidden');
 
-            try {
-                // Fetch directly from upstream API (Client Side) to bypass IP Block (403)
-                // Use the injected UPSTREAM_KEY (injected by src/index.js)
-                const targetUrl = 'https://api.ferdev.my.id/search/youtube?query=' + encodeURIComponent(query) + '&apikey=' + UPSTREAM_KEY;
+            const data = await fetchVideos(query);
+            loader.classList.add('hidden');
 
-                const res = await fetch(targetUrl);
-
-                if (!res.ok) {
-                    const errorText = await res.text();
-                    throw new Error('Upstream API Error: ' + res.status + ' ' + res.statusText + ' - ' + errorText.substring(0, 100));
-                }
-
-                const data = await res.json();
-
-                loader.classList.add('hidden');
-
-                if (data.success && data.result) {
-                    if (data.result.length === 0) {
-                        grid.innerHTML = '<div class="col-span-full text-center text-gray-500">No videos found for your search.</div>';
-                    } else {
-                        data.result.forEach(video => {
-                            const card = createVideoCard(video);
-                            grid.appendChild(card);
-                        });
-                    }
+            if (data.success && data.result) {
+                if (data.result.length === 0) {
+                    grid.innerHTML = '<div class="col-span-full text-center text-gray-500">No videos found for your search.</div>';
                 } else {
-                    const errorMsg = data.error || 'Unknown Error';
-                    grid.innerHTML = \`<div class="col-span-full text-center text-red-500">API Error: \${errorMsg}</div>\`;
+                    data.result.forEach(video => {
+                        const card = createVideoCard(video);
+                        grid.appendChild(card);
+                    });
                 }
-
-            } catch (e) {
-                console.error(e);
-                loader.classList.add('hidden');
-                grid.innerHTML = '<div class="col-span-full text-center text-red-500">Error loading videos</div>';
+            } else {
+                const errorMsg = data.error || 'Unknown Error';
+                grid.innerHTML = \`<div class="col-span-full text-center text-red-500">API Error: \${errorMsg}</div>\`;
             }
         }
 
@@ -278,6 +294,40 @@ export default `
                 const embedUrl = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1';
                 document.getElementById('player-frame').src = embedUrl;
                 document.getElementById('player-modal').classList.remove('hidden');
+
+                // Load Related Recommendations below player
+                loadRelatedVideos();
+            }
+        }
+
+        async function loadRelatedVideos() {
+            const relatedGrid = document.getElementById('related-grid');
+            relatedGrid.innerHTML = '<div class="col-span-full text-center py-8"><div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-600"></div></div>';
+
+            // Randomize related search
+            const relatedTopics = ['Recommended', 'Viral Shorts', 'New Music', 'Trending Now'];
+            const topic = relatedTopics[Math.floor(Math.random() * relatedTopics.length)];
+
+            const data = await fetchVideos(topic);
+            relatedGrid.innerHTML = ''; // Clear loader
+
+            if (data.success && data.result) {
+                 data.result.slice(0, 8).forEach(video => {
+                    // Create card but override click behavior to just update player
+                    const card = createVideoCard(video);
+                    // Override click to stay in modal
+                    const originalClick = card.onclick;
+                    card.onclick = () => {
+                         // Update player src
+                         const vidId = new URL(video.url).searchParams.get('v');
+                         document.getElementById('player-frame').src = 'https://www.youtube.com/embed/' + vidId + '?autoplay=1';
+                         // Reload related again? Maybe not for now to avoid flicker
+                         window.scrollTo(0,0);
+                    };
+                    relatedGrid.appendChild(card);
+                });
+            } else {
+                 relatedGrid.innerHTML = '<div class="col-span-full text-center text-gray-500">No related videos found.</div>';
             }
         }
 
