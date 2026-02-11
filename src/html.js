@@ -111,20 +111,20 @@ export default `
     </div>
 
     <!-- Video Player Modal -->
-    <div id="player-modal" class="fixed inset-0 z-50 bg-black/90 hidden backdrop-blur-sm overflow-y-auto">
-        <div class="min-h-screen px-4 py-8 flex flex-col items-center">
-            <!-- Player Container -->
-            <div class="relative w-full max-w-6xl aspect-video bg-black shadow-2xl rounded-lg overflow-hidden border border-[#333] mb-6 flex-shrink-0">
-                <button onclick="closePlayer()" class="absolute top-4 right-4 z-10 text-white bg-black/50 hover:bg-red-600 rounded-full p-2 transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-                <iframe id="player-frame" class="w-full h-full" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-            </div>
+    <div id="player-modal" class="fixed inset-0 z-50 bg-black hidden flex flex-col">
+        <!-- Sticky Player Container (Full Width) -->
+        <div class="relative w-full aspect-video bg-black shadow-2xl flex-shrink-0 z-20">
+            <button onclick="closePlayer()" class="absolute top-4 right-4 z-10 text-white bg-black/50 hover:bg-red-600 rounded-full p-2 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <iframe id="player-frame" class="w-full h-full" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
 
-            <!-- Recommendations Section -->
-            <div class="w-full max-w-6xl">
-                <h3 class="text-xl font-bold text-white mb-4">Video Terkait & Trending</h3>
-                <div id="related-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <!-- Scrollable Recommendations Section -->
+        <div class="flex-1 overflow-y-auto w-full bg-[#0f0f0f] relative z-10">
+             <div class="max-w-6xl mx-auto px-4 py-6">
+                <h3 class="text-lg font-bold text-white mb-4">Video Terkait & Trending</h3>
+                <div id="related-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-20">
                     <!-- Related videos injected here -->
                     <div class="col-span-full text-center py-8">
                         <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-600"></div>
