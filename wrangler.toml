@@ -1,0 +1,7 @@
+name = "agent-tube"
+main = "src/index.js"
+compatibility_date = "2023-10-02"
+
+[[r2_buckets]]
+binding = "vpsai"
+bucket_name = "vpsai"
