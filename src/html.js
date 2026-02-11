@@ -158,7 +158,7 @@ export default `
         </div>
 
         <!-- Sticky Player Container (Full Width) -->
-        <div class="relative w-full aspect-video bg-black shadow-2xl flex-shrink-0 z-20">
+        <div id="player-container" class="relative w-full aspect-video bg-black shadow-2xl flex-shrink-0 z-20">
             <iframe id="player-frame" class="w-full h-full" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
             <video id="native-player" class="w-full h-full object-contain bg-black hidden" controls autoplay playsinline></video>
         </div>
@@ -561,6 +561,7 @@ export default `
             // Check if native video (Drakor) or YouTube (Standard)
             const iframe = document.getElementById('player-frame');
             const nativeVideo = document.getElementById('native-player');
+            const playerContainer = document.getElementById('player-container');
 
             // Reset state
             iframe.src = '';
@@ -569,12 +570,16 @@ export default `
             iframe.classList.add('hidden');
 
             if (video.videoPath) {
-                // Native Player Mode (Drakor)
+                // Native Player Mode (Drakor) - Mobile/Portrait View
+                playerContainer.className = "relative w-full max-w-sm mx-auto aspect-[9/16] bg-black shadow-2xl flex-shrink-0 z-20";
+
                 nativeVideo.src = video.videoPath;
                 nativeVideo.classList.remove('hidden');
                 nativeVideo.play().catch(e => console.error("Autoplay failed", e));
             } else {
-                // YouTube Mode
+                // YouTube Mode - Standard Landscape View
+                playerContainer.className = "relative w-full aspect-video bg-black shadow-2xl flex-shrink-0 z-20";
+
                 let videoId = '';
                 try {
                     const url = (typeof video === 'string') ? video : video.url;
