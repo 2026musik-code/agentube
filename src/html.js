@@ -366,8 +366,11 @@ export default `
                 const data = await res.json();
                 loader.classList.add('hidden');
 
-                if (data && data.result) {
-                    data.result.forEach(item => {
+                // The API returns { status: true, data: [...] }
+                const items = data.data || data.result;
+
+                if (items && items.length > 0) {
+                    items.forEach(item => {
                         try {
                             const card = createDrakorCard(item);
                             grid.appendChild(card);
