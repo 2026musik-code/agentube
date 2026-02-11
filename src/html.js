@@ -76,9 +76,6 @@ export default `
     </div>
 
     <script>
-        /* KEY_INJECTION_POINT */
-        // NOTE: UPSTREAM_KEY is injected by src/index.js (const UPSTREAM_KEY = "...";)
-
         const API_BASE = window.location.origin;
         let AUTH_KEY = localStorage.getItem('agent_tube_key');
 
@@ -153,19 +150,21 @@ export default `
             loader.classList.remove('hidden');
 
             try {
-                // Fetch directly from upstream API to avoid Worker IP Block (403)
-                // Use the injected UPSTREAM_KEY
-                const targetUrl = `https://api.ferdev.my.id/search/youtube?query=\${encodeURIComponent(query)}&apikey=\${UPSTREAM_KEY}`;
-
-                const res = await fetch(targetUrl, {
-                    method: 'GET',
-                     // Usually browsers set User-Agent automatically.
-                     // We don't need Authorization header here because we use the API key in the URL.
+                const res = await fetch(API_BASE + '/api/search?q=' + encodeURIComponent(query), {
+                    headers: {
+                        'Authorization': 'Bearer ' + AUTH_KEY
+                    }
                 });
 
                 if (!res.ok) {
-                    const errorText = await res.text();
-                    throw new Error(`Upstream API Error: \${res.status} \${res.statusText} - \${errorText}`);
+                     const errorText = await res.text();
+                     // Parse JSON error from Worker if possible
+                     try {
+                         const jsonErr = JSON.parse(errorText);
+                         if (jsonErr.error) throw new Error(jsonErr.error);
+                     } catch(e) {}
+
+                     throw new Error(`\${res.status} \${res.statusText} - \${errorText.substring(0, 100)}`);
                 }
 
                 const data = await res.json();
