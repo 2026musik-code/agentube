@@ -160,7 +160,7 @@ export default `
         <!-- Sticky Player Container (Full Width) -->
         <div class="relative w-full aspect-video bg-black shadow-2xl flex-shrink-0 z-20">
             <iframe id="player-frame" class="w-full h-full" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-            <video id="native-player" class="w-full h-full hidden" controls autoplay playsinline></video>
+            <video id="native-player" class="w-full h-full object-contain bg-black hidden" controls autoplay playsinline></video>
         </div>
 
         <!-- Scrollable Content Section -->
