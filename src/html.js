@@ -28,41 +28,86 @@ export default `
     </div>
 
     <!-- Main App (Hidden by default) -->
-    <div id="app" class="hidden min-h-screen">
-        <!-- Header -->
+    <div id="app" class="hidden min-h-screen pb-20">
+        <!-- Mobile-App Header -->
         <header class="fixed top-0 left-0 right-0 h-16 glass border-b border-[#333] flex items-center justify-between px-4 z-40">
-            <div class="flex items-center gap-4">
-                 <div class="text-2xl font-bold tracking-tighter cursor-pointer" onclick="resetSearch()">
-                    <span class="text-red-600">AGENT</span> TUBE
-                 </div>
+            <div class="flex items-center gap-2" onclick="resetSearch()">
+                 <svg class="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 24 24"><path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z"/></svg>
+                 <div class="text-xl font-bold tracking-tight">AGENT <span class="text-red-500">TUBE</span></div>
             </div>
 
-            <div class="flex-1 max-w-2xl px-4">
-                <div class="relative group">
-                    <input type="text" id="search-input"
-                        class="w-full bg-[#121212] border border-[#333] rounded-full pl-6 pr-12 py-2 focus:outline-none focus:border-blue-500 transition-colors"
-                        placeholder="Search">
-                    <button onclick="performSearch()" class="absolute right-0 top-0 h-full px-4 rounded-r-full bg-[#222] border border-l-0 border-[#333] hover:bg-[#333] transition-colors">
-                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    </button>
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-red-600 to-purple-600 border border-white/20"></div>
+        </header>
+
+        <!-- Search Bar (Sticky below header) -->
+        <div class="fixed top-16 left-0 right-0 px-4 py-3 bg-[#0f0f0f] z-30">
+            <div class="relative group">
+                <input type="text" id="search-input"
+                    class="w-full bg-[#1a1a1a] border border-[#333] rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-red-600 transition-colors"
+                    placeholder="Cari video, film, atau musik...">
+                <svg class="absolute left-3 top-3 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <button onclick="performSearch()" class="absolute right-2 top-2 bg-red-600 p-1 rounded-lg hover:bg-red-700 transition-colors">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Category Chips -->
+        <div class="fixed top-[7.5rem] left-0 right-0 px-4 pb-2 bg-[#0f0f0f] z-30 overflow-x-auto no-scrollbar flex gap-3 text-sm">
+            <button onclick="performSearch('Trending')" class="whitespace-nowrap px-4 py-1.5 rounded-full bg-white text-black font-medium">All</button>
+            <button onclick="performSearch('Music')" class="whitespace-nowrap px-4 py-1.5 rounded-full bg-[#222] hover:bg-[#333] border border-[#333]">Music</button>
+            <button onclick="performSearch('Gaming')" class="whitespace-nowrap px-4 py-1.5 rounded-full bg-[#222] hover:bg-[#333] border border-[#333]">Gaming</button>
+            <button onclick="performSearch('News')" class="whitespace-nowrap px-4 py-1.5 rounded-full bg-[#222] hover:bg-[#333] border border-[#333]">News</button>
+            <button onclick="performSearch('Movies')" class="whitespace-nowrap px-4 py-1.5 rounded-full bg-[#222] hover:bg-[#333] border border-[#333]">Movies</button>
+            <button onclick="performSearch('Live')" class="whitespace-nowrap px-4 py-1.5 rounded-full bg-[#222] hover:bg-[#333] border border-[#333]">Live</button>
+        </div>
+
+        <!-- Content -->
+        <main class="pt-[11rem] px-4">
+            <!-- Hero / Featured Banner (Static Mockup for "Mewah" feel) -->
+            <div id="hero-banner" class="mb-6 relative aspect-[16/9] sm:aspect-[21/9] rounded-2xl overflow-hidden shadow-2xl border border-[#333]">
+                <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" class="w-full h-full object-cover opacity-60">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                <div class="absolute bottom-4 left-4 right-4">
+                    <span class="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider mb-2 inline-block">Featured</span>
+                    <h2 class="text-2xl font-bold text-white mb-1 drop-shadow-md">Welcome to Agent Tube</h2>
+                    <p class="text-gray-300 text-sm line-clamp-1">Stream unlimited music and videos with premium experience.</p>
                 </div>
             </div>
 
-            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-purple-600"></div>
-        </header>
-
-        <!-- Sidebar (Optional, maybe just hidden on mobile) -->
-
-        <!-- Content -->
-        <main class="pt-20 px-4 pb-8">
-            <div id="loading" class="hidden flex justify-center mt-10">
-                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600"></div>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-white">Rekomendasi Untukmu</h3>
+                <span class="text-xs text-red-500 font-medium cursor-pointer">Lihat Semua</span>
             </div>
 
-            <div id="video-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <div id="loading" class="hidden flex justify-center py-10">
+                <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-red-600"></div>
+            </div>
+
+            <div id="video-grid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 <!-- Videos injected here -->
             </div>
         </main>
+
+        <!-- Bottom Navigation (Mobile App Style) -->
+        <nav class="fixed bottom-0 left-0 right-0 h-16 bg-[#0f0f0f] border-t border-[#333] flex items-center justify-around z-40 pb-safe">
+            <div class="flex flex-col items-center gap-1 text-red-500 cursor-pointer">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                <span class="text-[10px] font-medium">Home</span>
+            </div>
+            <div class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-colors cursor-pointer" onclick="performSearch('Trending')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                <span class="text-[10px] font-medium">Trending</span>
+            </div>
+            <div class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-colors cursor-pointer">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                <span class="text-[10px] font-medium">Library</span>
+            </div>
+            <div class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-colors cursor-pointer">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                <span class="text-[10px] font-medium">Profile</span>
+            </div>
+        </nav>
     </div>
 
     <!-- Video Player Modal -->
