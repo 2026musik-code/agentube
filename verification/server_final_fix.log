@@ -1,0 +1,5 @@
+(node:15867) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///app/src/html.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Server running on port 3011

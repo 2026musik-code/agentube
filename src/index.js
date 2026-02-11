@@ -23,8 +23,8 @@ export default {
       // Inject the API key into the HTML
       // We assume `html` is a string (template literal)
       const injectedHtml = html.replace(
-          'const API_BASE = window.location.origin;',
-          `const UPSTREAM_KEY = "${API_KEY}";\nconst API_BASE = window.location.origin;`
+          '/* INJECT_KEY_HERE */',
+          `const UPSTREAM_KEY = "${API_KEY}";`
       );
 
       return new Response(injectedHtml, {

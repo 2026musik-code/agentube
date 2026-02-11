@@ -258,6 +258,7 @@ export default `
     </div>
 
     <script>
+        /* INJECT_KEY_HERE */
         const API_BASE = window.location.origin;
         let AUTH_KEY = localStorage.getItem('agent_tube_key');
 
