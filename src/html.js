@@ -301,15 +301,23 @@ export default `
             setTimeout(() => {
                 login.classList.add('hidden');
                 document.getElementById('app').classList.remove('hidden');
-                showHome();
-                // Load random recommendations
-                const randomTopics = ['Trending Indonesia', 'Viral Video', 'Music Hits', 'Lucu', 'Berita Terkini'];
-                const randomTopic = randomTopics[Math.floor(Math.random() * randomTopics.length)];
-                performSearch(randomTopic);
+
+                // Restore last active tab
+                const lastTab = localStorage.getItem('active_tab');
+                if (lastTab === 'drakor') {
+                    showDrakor();
+                } else {
+                    showHome();
+                    // Load random recommendations only if showing home initially
+                    const randomTopics = ['Trending Indonesia', 'Viral Video', 'Music Hits', 'Lucu', 'Berita Terkini'];
+                    const randomTopic = randomTopics[Math.floor(Math.random() * randomTopics.length)];
+                    performSearch(randomTopic);
+                }
             }, 500);
         }
 
         function showHome() {
+            localStorage.setItem('active_tab', 'home');
             // Hide Drakor View
             document.getElementById('drakor-view').classList.add('hidden');
 
@@ -335,6 +343,7 @@ export default `
         }
 
         async function showDrakor() {
+            localStorage.setItem('active_tab', 'drakor');
             // Hide Home Elements
             document.getElementById('app-header').classList.add('hidden');
             document.getElementById('search-bar-container').classList.add('hidden');
