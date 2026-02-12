@@ -450,10 +450,19 @@ export default `
                 author: "Drakor Premium",
                 videoPath: videoUrl,
                 uploadDate: item.playCount ? item.playCount + ' Plays' : 'New',
-                episode: \`Episode \${currentEp} / \${totalEp}\`
+                episode: \`Episode \${currentEp} / \${totalEp}\`,
+                bookId: item.bookId // Store ID for fallback fetch
             };
 
-            div.onclick = () => openPlayer(videoObj);
+            div.onclick = () => {
+                if (videoObj.videoPath) {
+                    openPlayer(videoObj);
+                } else if (videoObj.bookId) {
+                    playDrakorById(videoObj.bookId, videoObj);
+                } else {
+                    showToast("Maaf, konten ini tidak dapat diputar.");
+                }
+            };
 
             div.innerHTML = \`
                 <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy">
@@ -771,6 +780,49 @@ export default `
 
                  loadMoreRelated(false, type);
             };
+        }
+
+        async function playDrakorById(bookId, meta) {
+            showToast("Memuat video...", "success");
+            try {
+                // Fetch random/details using bookId to get a playable chapter
+                const res = await fetch('https://www.magma-api.biz.id/dramabox/random?bookId=' + bookId);
+                if (!res.ok) throw new Error("Gagal memuat detail video");
+
+                const json = await res.json();
+                const items = json.data || json.result;
+
+                if (items && items.length > 0) {
+                    const detail = items[0]; // Take first playable chapter found
+
+                    // Extract Video URL logic (same as createDrakorCard)
+                    let videoUrl = detail.videoPath;
+                    if (detail.cdnList && detail.cdnList.length > 0) {
+                         const cdn = detail.cdnList.find(c => c.isDefault) || detail.cdnList[0];
+                         if (cdn && cdn.videoPathList && cdn.videoPathList.length > 0) {
+                             const quality = cdn.videoPathList.find(v => v.quality === 720) || cdn.videoPathList[0];
+                             videoUrl = quality.videoPath;
+                         }
+                    }
+
+                    if (videoUrl) {
+                        // Merge details
+                        const fullObj = {
+                            ...meta,
+                            videoPath: videoUrl,
+                            episode: \`Episode \${(detail.chapterIndex || 0) + 1} / \${detail.totalChapterNum || '?'}\`
+                        };
+                        openPlayer(fullObj);
+                    } else {
+                        showToast("Maaf, stream tidak ditemukan untuk drama ini.");
+                    }
+                } else {
+                    showToast("Detail video tidak ditemukan.");
+                }
+            } catch (e) {
+                console.error(e);
+                showToast("Error: " + e.message);
+            }
         }
 
         function closePlayer() {
