@@ -611,6 +611,12 @@ export default `
             const nativeVideo = document.getElementById('native-player');
             const playerContainer = document.getElementById('player-container');
 
+            // Drakor Safety Check: If Author is Drakor Premium but no path, show error
+            if (video.author === "Drakor Premium" && !video.videoPath) {
+                showToast("Maaf, video ini belum tersedia untuk diputar.");
+                return;
+            }
+
             // Reset state
             iframe.src = '';
             nativeVideo.src = '';
