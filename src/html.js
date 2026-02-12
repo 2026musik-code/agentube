@@ -112,9 +112,17 @@ export default `
 
         <!-- Drakor View (Hidden by default) -->
         <main id="drakor-view" class="pt-20 px-4 pb-24 hidden">
-            <div class="flex items-center gap-2 mb-6">
-                <div class="w-1 h-8 bg-red-600 rounded-full"></div>
-                <h2 class="text-2xl font-bold tracking-tight">AGENT <span class="text-red-500">TUBE</span></h2>
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-2">
+                    <div class="w-1 h-8 bg-red-600 rounded-full"></div>
+                    <h2 class="text-2xl font-bold tracking-tight">AGENT <span class="text-red-500">TUBE</span></h2>
+                </div>
+                <!-- Drakor Sub-Nav -->
+                <div class="flex bg-[#1a1a1a] rounded-full p-1 border border-[#333]">
+                    <button onclick="switchDrakorTab('random')" id="btn-drakor-random" class="px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-white text-black">Random</button>
+                    <button onclick="switchDrakorTab('latest')" id="btn-drakor-latest" class="px-4 py-1.5 rounded-full text-xs font-bold transition-all text-gray-400 hover:text-white">Latest</button>
+                    <button onclick="switchDrakorTab('trending')" id="btn-drakor-trending" class="px-4 py-1.5 rounded-full text-xs font-bold transition-all text-gray-400 hover:text-white">Trending</button>
+                </div>
             </div>
 
             <div id="drakor-loading" class="flex justify-center py-20">
@@ -346,21 +354,41 @@ export default `
             // Fetch content if empty
             const drakorGrid = document.getElementById('drakor-grid');
             if (drakorGrid.children.length === 0) {
-                await fetchDrakor();
+                await fetchDrakor('random');
             }
 
             window.scrollTo(0,0);
         }
 
-        async function fetchDrakor() {
+        async function switchDrakorTab(type) {
+            // Update Tab UI
+            ['random', 'latest', 'trending'].forEach(t => {
+                const btn = document.getElementById('btn-drakor-' + t);
+                if (t === type) {
+                    btn.className = 'px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-white text-black';
+                } else {
+                    btn.className = 'px-4 py-1.5 rounded-full text-xs font-bold transition-all text-gray-400 hover:text-white';
+                }
+            });
+
+            await fetchDrakor(type);
+        }
+
+        async function fetchDrakor(type = 'random', query = '') {
             const grid = document.getElementById('drakor-grid');
             const loader = document.getElementById('drakor-loading');
 
+            grid.innerHTML = ''; // Clear existing
             loader.classList.remove('hidden');
+
+            let url = 'https://www.magma-api.biz.id/dramabox/random';
+            if (type === 'latest') url = 'https://www.magma-api.biz.id/dramabox/latest';
+            if (type === 'trending') url = 'https://www.magma-api.biz.id/dramabox/trending';
+            if (type === 'search' && query) url = 'https://www.magma-api.biz.id/dramabox/search?query=' + encodeURIComponent(query);
 
             try {
                 // Use www subdomain to ensure CORS headers are present (prevents Redirect 307 which causes CORS issues)
-                const res = await fetch('https://www.magma-api.biz.id/dramabox/random');
+                const res = await fetch(url);
                 if (!res.ok) throw new Error('Failed to load Drakor data');
 
                 const data = await res.json();
@@ -379,11 +407,12 @@ export default `
                         }
                     });
                 } else {
-                    showToast('No Drakor data found');
+                    grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10">No dramas found.</div>';
                 }
             } catch (e) {
                 loader.classList.add('hidden');
                 showToast('Drakor API Error: ' + e.message);
+                grid.innerHTML = '<div class="col-span-full text-center text-red-500 py-10">Failed to load content.</div>';
             }
         }
 
@@ -461,6 +490,16 @@ export default `
             const query = queryOverride || document.getElementById('search-input').value;
             if (!query) return;
 
+            // Check if we are in Drakor Mode
+            const isDrakorMode = !document.getElementById('drakor-view').classList.contains('hidden');
+
+            if (isDrakorMode) {
+                // Perform Drakor Search
+                fetchDrakor('search', query);
+                return;
+            }
+
+            // Normal YouTube Search
             const grid = document.getElementById('video-grid');
             const loader = document.getElementById('loading');
             const loadMoreBtn = document.getElementById('load-more-container');
