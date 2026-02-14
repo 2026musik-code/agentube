@@ -232,7 +232,9 @@ export default `
         function showToast(message, type = 'error') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            const colorClass = type === 'success' ? 'bg-green-600' : 'bg-red-600';
+            let colorClass = 'bg-red-600';
+            if (type === 'success') colorClass = 'bg-green-600';
+            if (type === 'info') colorClass = 'bg-blue-600';
 
             toast.className = \`\${colorClass} text-white px-4 py-3 rounded-lg shadow-2xl flex items-center gap-3 min-w-[300px] pointer-events-auto toast-enter border border-white/10\`;
             toast.innerHTML = \`
@@ -841,8 +843,35 @@ export default `
             performSearch('Music');
         }
 
-        function changeAccessKey() {
-            if (confirm("Logout and change Access Key?")) {
+        async function changeAccessKey() {
+            if (confirm("Logout and remove Access Key from server?")) {
+                const currentKey = localStorage.getItem('agent_tube_key');
+                if (currentKey) {
+                    try {
+                        showToast("Deleting key from server...", "info");
+                        const res = await fetch(API_BASE + '/auth', {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ key: currentKey })
+                        });
+
+                        const data = await res.json();
+                        if (!res.ok) {
+                            if (res.status === 403) {
+                                alert("Cannot delete Master Key. Logging out locally.");
+                            } else {
+                                alert("Failed to delete key from server: " + (data.error || 'Unknown Error'));
+                            }
+                        } else {
+                            showToast("Key deleted successfully from server.", "success");
+                            await new Promise(r => setTimeout(r, 1500));
+                        }
+                    } catch (e) {
+                        console.error("Logout error", e);
+                        alert("Network error. Logging out locally.");
+                    }
+                }
+
                 localStorage.removeItem('agent_tube_key');
                 location.reload();
             }

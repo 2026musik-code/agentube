@@ -32,6 +32,38 @@ export default {
       });
     }
 
+    if (path === '/auth' && request.method === 'DELETE') {
+      try {
+        const body = await request.json();
+        const key = body.key;
+        if (!key) return new Response('Missing key', { status: 400, headers: corsHeaders });
+
+        // Prevent deletion of master key
+        if (key === API_KEY || key === 'fdv_oO0fXjS-jBrhgaZ6WdC_5A') {
+             return new Response(JSON.stringify({ success: false, error: "Cannot delete Master Key" }), {
+                 status: 403,
+                 headers: { 'Content-Type': 'application/json', ...corsHeaders }
+             });
+        }
+
+        try {
+            await env.vpsai.delete(key);
+        } catch (r2Err) {
+            console.error("R2 Delete Error:", r2Err);
+            // Don't fail the request if R2 fails, just log it, but user expects it deleted.
+            // Actually, we should return error if we can't delete it.
+            return new Response(JSON.stringify({ success: false, error: "Failed to delete from R2: " + r2Err.message }), { status: 500, headers: corsHeaders });
+        }
+
+        return new Response(JSON.stringify({ success: true, message: "Key deleted from R2" }), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
+        });
+
+      } catch (e) {
+        return new Response(JSON.stringify({ success: false, error: e.message }), { status: 500, headers: corsHeaders });
+      }
+    }
+
     if (path === '/auth' && request.method === 'POST') {
       try {
         const body = await request.json();
