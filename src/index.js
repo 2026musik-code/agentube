@@ -1,6 +1,7 @@
 import html from './html.js';
 
-const API_KEY = "fdv_oO0fXjS-jBrhgaZ6WdC_5A";
+const UPSTREAM_API_KEY = "fdv_oO0fXjS-jBrhgaZ6WdC_5A";
+const MASTER_ACCESS_KEY = "dedi131";
 const API_URL = "https://api.ferdev.my.id/search/youtube";
 
 export default {
@@ -20,11 +21,11 @@ export default {
     }
 
     if (path === '/') {
-      // Inject the API key into the HTML
+      // Inject the UPSTREAM API key into the HTML so the client can fetch videos
       // Use Regex to be robust against whitespace
       const injectedHtml = html.replace(
           /\/\*\s*INJECT_KEY_HERE\s*\*\//,
-          `const UPSTREAM_KEY = "${API_KEY}";`
+          `const UPSTREAM_KEY = "${UPSTREAM_API_KEY}";`
       );
 
       return new Response(injectedHtml, {
@@ -39,7 +40,7 @@ export default {
         if (!key) return new Response('Missing key', { status: 400, headers: corsHeaders });
 
         // Prevent deletion of master key
-        if (key === API_KEY || key === 'fdv_oO0fXjS-jBrhgaZ6WdC_5A') {
+        if (key === MASTER_ACCESS_KEY || key === 'dedi131') {
              return new Response(JSON.stringify({ success: false, error: "Cannot delete Master Key" }), {
                  status: 403,
                  headers: { 'Content-Type': 'application/json', ...corsHeaders }
@@ -71,10 +72,10 @@ export default {
 
         if (!key) return new Response('Missing key', { status: 400, headers: corsHeaders });
 
-        // Check if key matches the hardcoded API Key or exists in R2
+        // Check if key matches the hardcoded MASTER ACCESS KEY or exists in R2
         let isValid = false;
 
-        if (key === API_KEY || key === 'fdv_oO0fXjS-jBrhgaZ6WdC_5A') {
+        if (key === MASTER_ACCESS_KEY || key === 'dedi131') {
             isValid = true;
         } else {
             // Check R2
@@ -123,7 +124,7 @@ export default {
       const token = authHeader.split(' ')[1];
 
       let isValid = false;
-      if (token === API_KEY || token === 'fdv_oO0fXjS-jBrhgaZ6WdC_5A') {
+      if (token === MASTER_ACCESS_KEY || token === 'dedi131') {
           isValid = true;
       } else {
           try {
@@ -145,7 +146,7 @@ export default {
       }
 
       try {
-        const targetUrl = `${API_URL}?query=${encodeURIComponent(query)}&apikey=${API_KEY}`;
+        const targetUrl = `${API_URL}?query=${encodeURIComponent(query)}&apikey=${UPSTREAM_API_KEY}`;
 
         const apiResp = await fetch(targetUrl, {
             method: 'GET',
