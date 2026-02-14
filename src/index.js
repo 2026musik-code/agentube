@@ -1,6 +1,6 @@
 import html from './html.js';
 
-const UPSTREAM_API_KEY = "fdv_oO0fXjS-jBrhgaZ6WdC_5A";
+const UPSTREAM_API_KEY = "dedi131";
 const MASTER_ACCESS_KEY = "dedi131";
 const API_URL = "https://api.ferdev.my.id/search/youtube";
 
