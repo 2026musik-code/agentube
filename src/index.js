@@ -92,10 +92,21 @@ export default {
             headers: { 'Content-Type': 'application/json', ...corsHeaders },
           });
         } else {
-          return new Response(JSON.stringify({ success: false, error: "Invalid Key" }), {
-            status: 401,
-            headers: { 'Content-Type': 'application/json', ...corsHeaders },
-          });
+          // If key is not valid (not master, not in R2), create/register it as a new active session
+          try {
+             // Store the new key in R2 with a simple value 'active'
+             await env.vpsai.put(key, 'active');
+
+             return new Response(JSON.stringify({ success: true, message: "New Key Registered" }), {
+                headers: { 'Content-Type': 'application/json', ...corsHeaders },
+             });
+          } catch (r2Err) {
+             console.error("R2 Put Error:", r2Err);
+             return new Response(JSON.stringify({ success: false, error: "Failed to register key: " + r2Err.message }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json', ...corsHeaders },
+             });
+          }
         }
       } catch (e) {
         return new Response(e.message, { status: 500, headers: corsHeaders });
