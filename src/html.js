@@ -486,26 +486,53 @@ export default `
             return div;
         }
 
-        async function fetchVideos(query) {
+        async function fetchVideos(query, keyOverride = null) {
             try {
-                if (typeof UPSTREAM_KEY === 'undefined') {
-                    throw new Error("API Key not injected");
+                // If keyOverride is provided, use it.
+                // Else, use AUTH_KEY (User's Login Key).
+                // If AUTH_KEY is empty, fallback to UPSTREAM_KEY (Master/Injected).
+                // But wait, if keyOverride is provided, we must stick to it to prevent loops?
+                // The logic below ensures we try AUTH_KEY first.
+                // If that fails, we recursively call with keyOverride=UPSTREAM_KEY.
+
+                let apiKeyToUse;
+                if (keyOverride) {
+                    apiKeyToUse = keyOverride;
+                } else if (AUTH_KEY) {
+                    apiKeyToUse = AUTH_KEY;
+                } else {
+                    apiKeyToUse = UPSTREAM_KEY;
                 }
 
-                // Fetch directly from upstream API (Client Side) to bypass IP Block (403)
-                // Use the injected UPSTREAM_KEY (injected by src/index.js)
-                const targetUrl = 'https://api.ferdev.my.id/search/youtube?query=' + encodeURIComponent(query) + '&apikey=' + UPSTREAM_KEY;
+                if (!apiKeyToUse) {
+                    throw new Error("No API Key available");
+                }
+
+                // Fetch directly from upstream API (Client Side)
+                const targetUrl = 'https://api.ferdev.my.id/search/youtube?query=' + encodeURIComponent(query) + '&apikey=' + apiKeyToUse;
 
                 const res = await fetch(targetUrl);
 
                 if (!res.ok) {
+                    // Specific Handling for 403 (Invalid Key) - Try Fallback if we haven't already
+                    if (res.status === 403) {
+                         // Only fallback if the current failing key IS NOT the Master Key
+                         if (apiKeyToUse !== UPSTREAM_KEY) {
+                             console.warn(`Key ${apiKeyToUse} failed (403). Falling back to Master Key.`);
+                             return await fetchVideos(query, UPSTREAM_KEY);
+                         }
+                    }
+
                     const errorText = await res.text();
                     throw new Error('Upstream API Error: ' + res.status + ' ' + res.statusText + ' - ' + errorText.substring(0, 100));
                 }
                 return await res.json();
             } catch (e) {
                 console.error(e);
-                showToast(e.message); // Show visible error
+                // Don't show toast on fallback retry unless it's the final attempt
+                if (keyOverride === UPSTREAM_KEY || !AUTH_KEY || AUTH_KEY === UPSTREAM_KEY) {
+                     showToast(e.message);
+                }
                 return { success: false, error: e.message };
             }
         }
