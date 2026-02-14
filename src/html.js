@@ -46,7 +46,11 @@ export default `
                  <div class="text-xl font-bold tracking-tight">AGENT <span class="text-red-500">TUBE</span></div>
             </div>
 
-            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-red-600 to-purple-600 border border-white/20"></div>
+            <div onclick="changeAccessKey()" class="w-8 h-8 rounded-full bg-gradient-to-br from-red-600 to-purple-600 border border-white/20 cursor-pointer hover:scale-110 transition-transform shadow-lg relative group">
+                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                </div>
+            </div>
         </header>
 
         <!-- Search Bar (Sticky below header) -->
@@ -835,6 +839,13 @@ export default `
         function resetSearch() {
             document.getElementById('search-input').value = '';
             performSearch('Music');
+        }
+
+        function changeAccessKey() {
+            if (confirm("Logout and change Access Key?")) {
+                localStorage.removeItem('agent_tube_key');
+                location.reload();
+            }
         }
     </script>
 </body>
